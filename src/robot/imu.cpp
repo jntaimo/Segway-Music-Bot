@@ -1,9 +1,13 @@
-#include <string.h>
-#include <Adafruit_BNO055.h>
-#include <Adafruit_Sensor.h>
-#include <utility/imumaths.h>
+
 #include "imu.h"
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+sensors_event_t gryoEvent;
+
+float yaw = 0;
+float pitch = 0;
+float roll = 0;
+float pitchRate = 0;
 
 void imuSetup()
 {
@@ -16,36 +20,20 @@ void imuSetup()
     bno.setExtCrystalUse(true);
 }
 
-// Loop that gets gyro sensor values and prints them out continuously
-void imuLoop() {
-  /* Get a new sensor event */ 
-  sensors_event_t event; 
-  bno.getEvent(&event);
-  
-  /* Display the floating point data */
-  Serial.print("X: ");
-  Serial.print(event.orientation.x, 4);
-  Serial.print("\tY: ");
-  Serial.print(event.orientation.y, 4);
-  Serial.print("\tZ: ");
-  Serial.print(event.orientation.z, 4);
-  Serial.println("");
-  
-  //delay(100);
+void printIMU(){
+    Serial.printf("Roll: %.2f ° Pitch: %.2f ° Yaw: %.2f ° Pitch rate: %.2f °/s\n", roll, pitch, yaw, pitchRate);
 }
 
-// Takes in references to variables to store gyro info, and directly changes them
-void readGyro(float &x, float &y, float &z){
-    sensors_event_t event; 
-    bno.getEvent(&event);
-    x = event.orientation.x;
-    y = event.orientation.y;
-    z = event.orientation.z;
-    
+//reads the current gyro readings and stores them in the gyro event and roll/pitch/yaw variables
+//also stores the pitchRate
+//should be called at 100HZ
+void updateIMU(){
+    bno.getEvent(&gyroEvent);
+    imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    yaw = gyroEvent.orientation.heading;
+    pitch = gyroEvent.orientation.pitch;
+    roll = gyroEvent.orientation.roll;
+    pitchRate = gyro.z();
 }
 
-void readPitchRate(float &pitchRate){
-imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
-  
-  pitchRate = gyro.z();
-}
+
