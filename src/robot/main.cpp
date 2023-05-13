@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "pid.h"
 #include "imu.h"
+#include "pins.h"
 void setup() {
   // put your setup code here, to run once:
 }
